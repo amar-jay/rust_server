@@ -1,9 +1,16 @@
-use tokio;
 use warp;
 mod routes;
-#[tokio::main]
-fn main() {
-    println!("Hello, world!");
+mod db;
+mod models;
+mod controllers;
 
-    warp::serve();
+#[tokio::main]
+async fn main() {
+    let db = db::init();
+    let routes = routes::init(db);
+
+    println!("Server running on http://localhost:3000");
+    warp::serve(routes)
+        .run(([127, 0, 0, 1], 3000))
+        .await;
 }
