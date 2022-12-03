@@ -6,7 +6,7 @@ pub struct Todo {
     ///A unique id for each todo
     pub id: String,
 
-    /// todo
+    /// todo text
     pub text: String,
 
     ///A unique id for each todo

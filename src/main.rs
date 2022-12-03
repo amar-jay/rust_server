@@ -2,7 +2,6 @@ use warp;
 mod routes;
 mod db;
 mod models;
-mod handlers;
 
 #[tokio::main]
 async fn main() {

@@ -9,6 +9,8 @@ edition = "2021"
 [dependencies]
 serde_json = "1.0.89"
 serde = { version="1.0.148", features=["derive"] }
-tokio = { version="1.22.0", features=["macros", "rt-multi-thread"]}
-warp = "0.3.3"
 uuid = { version="1.2.2", features=["v4"]}
+tokio = { version="1.22.0", features=["macros", "rt-multi-thread"]}
+sqlx = { version = "0.5.9", features = ["runtime-tokio-rustls", "sqlite"] }
+warp = "0.3.3"
+anyhow = "1.0.66"

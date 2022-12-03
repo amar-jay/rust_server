@@ -1,11 +1,9 @@
 //!
 use std::convert::Infallible;
 
-#[allow(unused_variables)]
-
 use warp::{filters::BoxedFilter, Filter, Reply};
 use crate::db::DB;
-use crate::handlers::Handlers;
+use crate::db::Handlers;
 use crate::models::Todo;
 pub fn init(db: DB<Todo>) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
 
