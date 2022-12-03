@@ -1,0 +1,5 @@
+CREATE TABLE todo (
+  id TEXT PRIMARY KEY,
+  text TEXT NOT NULL,
+  done BOOLEAN NOT NULL
+);
