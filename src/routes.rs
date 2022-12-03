@@ -1,17 +1,19 @@
 //!
 use std::convert::Infallible;
+use std::sync::Arc;
 
 use warp::{filters::BoxedFilter, Filter, Reply};
 use crate::db::DB;
 use crate::db::Handlers;
 use crate::models::Todo;
-pub fn init(db: DB<Todo>) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
+pub fn init(sudo_db: DB<Todo>,db:Arc<Handlers>) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
 
-    return get_todos(db.clone())
-        .or(get_todo_by_id(db.clone()))
-        .or(create_todo(db.clone()))
-        .or(update_todo(db.clone()))
-        .or(delete_todo(db.clone()));
+    return get_todos(sudo_db.clone())
+        .or(get_todo_by_id(sudo_db.clone()))
+        .or(create_todo(sudo_db.clone()))
+        .or(update_todo(sudo_db.clone()))
+        .or(delete_todo(sudo_db.clone()))
+        .or(status(db.clone()));
 
 }
 
@@ -67,6 +69,17 @@ fn delete_todo(db: DB<Todo>) ->  BoxedFilter<(impl Reply,)> {
 
 }
 
-fn use_db(db: DB<Todo>) ->  impl Filter<Extract = (DB<Todo>, ), Error = Infallible> + Clone {
-    warp::any().map(move || db.clone())
+/// give stats about db
+fn status(db: Arc<Handlers>) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
+    warp::path("status")
+    .and(use_db(db))
+    .and_then(|d:Arc<Handlers>| {
+            let dbz = d.clone();
+                d.foobar()
+        })
+}
+
+/// wrap db instance
+fn use_db<T: std::marker::Sync + std::marker::Send>(sudo_db: Arc<T>) ->  impl Filter<Extract = (Arc<T>, ), Error = Infallible> + Clone {
+    warp::any().map(move || sudo_db.clone())
 }

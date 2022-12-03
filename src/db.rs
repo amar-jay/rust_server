@@ -33,7 +33,7 @@ pub struct Handlers {
 
 impl Handlers {
     /// Create a new DB instance and also connect to database
-    pub async fn new(uri: &str) -> Result<Self> {
+    pub async fn new(uri: &str) -> Result<Arc<Self>> {
         // run migarations
         {
             let mut conn = SqliteConnectOptions::from_str(&uri)?
@@ -44,16 +44,18 @@ impl Handlers {
             sqlx::migrate!().run(&mut conn).await?;
         }
 
+        // connect to sqlite db
         let pool = SqlitePool::connect(uri).await?;
-        Ok(Self {
+        Ok(Arc::new(Self {
             pool
-        })
+        }))
     }
 
     /// check whether db connected or not
-    pub async fn foobar(&self) -> Result<bool> {
-        let res: (bool, ) = sqlx::query_as("SELECT 1").fetch_one(&self.pool).await?;
-        Ok(res.0)
+    pub async fn foobar(&self) ->  Result<impl Reply, Rejection> {
+        // TODO: properly handle errors
+        let res: (bool, ) = sqlx::query_as("SELECT 1").fetch_one(&self.pool).await.unwrap();
+        Ok(warp::reply::json(&res.0))
     }
 
 
