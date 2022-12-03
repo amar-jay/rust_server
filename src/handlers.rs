@@ -35,7 +35,7 @@ impl Handlers {
 
         println!("create todo");
         for i in 0..todos.len() {
-            if todos[i].id == todo.id {
+            if todos[i].id == todo.id  || todos[i].text == todo.text {
                 return Ok(warp::reply::json(&String::from("{\"error\": \"Already exists\"}")));
             }
         }
