@@ -13,7 +13,7 @@ pub fn init() -> DB<Todo> {
              Arc::new(Mutex::new(json))
          }
          Err(_) => {
-          //  println!("data/data.json not found");
+            println!("data/data.json not found");
             Arc::new(Mutex::new(Vec::new()))
             }
      }
