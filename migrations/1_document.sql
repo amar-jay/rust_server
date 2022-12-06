@@ -1,4 +1,4 @@
-CREATE TABLE todo (
+CREATE TABLE todos (
   id TEXT PRIMARY KEY,
   text TEXT NOT NULL,
   done BOOLEAN NOT NULL

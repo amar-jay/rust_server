@@ -1,6 +1,6 @@
 [package]
 name = "basic_rust_server"
-author = ["amar-jay <me@themanan.me>"]
+author = ["amar-jay<me@themanan.me>"]
 version = "0.1.0"
 edition = "2021"
 
@@ -14,3 +14,4 @@ tokio = { version="1.22.0", features=["macros", "rt-multi-thread"]}
 sqlx = { version = "0.5.9", features = ["runtime-tokio-rustls", "sqlite"] }
 warp = "0.3.3"
 anyhow = "1.0.66"
+dotenv = "0.15.0"

@@ -5,7 +5,7 @@ use sqlx::{ConnectOptions, sqlite::SqliteConnectOptions, SqlitePool};
 use crate::models::Todo;
 use tokio::sync::Mutex;
 use std::sync::Arc;
-use anyhow::{bail, Result};
+use anyhow::Result;
 
 pub type DB<T> = Arc<Mutex<Vec<T>>>;
 /// initialize db
@@ -33,7 +33,7 @@ pub struct Handlers {
 
 impl Handlers {
     /// Create a new DB instance and also connect to database
-    pub async fn new(uri: &str) -> Result<Arc<Self>> {
+    pub async fn new(uri: &str) -> Result<Self> {
         // run migarations
         {
             let mut conn = SqliteConnectOptions::from_str(&uri)?
@@ -46,43 +46,49 @@ impl Handlers {
 
         // connect to sqlite db
         let pool = SqlitePool::connect(uri).await?;
-        Ok(Arc::new(Self {
+        Ok(Self {
             pool
-        }))
+        })
     }
 
     /// check whether db connected or not
-    pub async fn foobar(&self) ->  Result<impl Reply, Rejection> {
+    pub async fn foobar(x: Arc<Handlers>) ->  Result<impl Reply, Rejection> {
         // TODO: properly handle errors
-        let res: (bool, ) = sqlx::query_as("SELECT 1").fetch_one(&self.pool).await.unwrap();
+        let res: (bool, ) = sqlx::query_as("SELECT 1").fetch_one(&x.pool).await.unwrap();
         Ok(warp::reply::json(&res.0))
     }
 
 
     /// count the number of todos present
-    pub async fn todos_len(&self) ->  Result<impl Reply>  {
-        let res: (i64, ) = sqlx::query_as("SELECT count(*) FROM todos").fetch_one(&self.pool).await?;
+    pub async fn todos_len(x: Arc<Handlers>) ->  Result<impl Reply, Rejection>  {
+        let res: (i64, ) = sqlx::query_as("SELECT count(*) FROM todos").fetch_one(&x.pool).await.expect("cannot fetch todos length");
         Ok(warp::reply::json(&res.0))
     }
 
-    pub async fn create_todo_from_db(&self, todo: Todo) -> Result<impl Reply> {
+
+    pub async fn select_todos_from_db(x: Arc<Handlers>) -> Result<impl Reply, Rejection> {
+        //let db = db.lock().await;
+        let res: (String, String, bool, ) = sqlx::query_as("SELECT id, text, done FROM todos")
+        .fetch_one(&x.pool).await.expect("cannot fetch todos");
+
+
+        return Ok(warp::reply::json(&res))
+
+    }
+    pub async fn insert_todo_from_db(x: Arc<Handlers>, todo: Todo) -> Result<impl Reply, Rejection> {
         //let db = db.lock().await;
         let res = sqlx::query(r#"
         INSERT INTO todos ( id, text, done)
         VALUES ($1, $2, $3)
-        ON CONFLICT(id) DO UPDATE select 
-        text = excluded.text,
-        done = excluded.done"
         "#)
             .bind(todo.id)
             .bind(todo.text)
             .bind(todo.done)
-            .execute(&self.pool).await?;
+            .execute(&x.pool).await.expect("cannot insert todo");
 
 
         if res.rows_affected() != 1 {
-            bail!("Expected store to recieve morethan 1 row instead has {}", res.rows_affected())
-
+            panic!("Expected store to recieve morethan 1 row instead has {}", res.rows_affected())
         }
         return Ok(warp::reply::json(&String::from("added successfully")))
 
@@ -137,4 +143,5 @@ impl Handlers {
     pub fn delete_todo(db: DB<Todo>) {
 
     }
+
 }
